@@ -6,7 +6,7 @@ class CPU:
     """Main CPU class."""
 
     def __init__(self):
-        """Construct a new CPU."""
+        """Construct a new CPU. """
         pass
 
     def load(self):
