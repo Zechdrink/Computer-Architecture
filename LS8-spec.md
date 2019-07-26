@@ -526,6 +526,22 @@ Machine code:
 AA 0a 0b
 ```
 
+### PUSH
+
+`PUSH register`
+
+Push the value in the given register on the stack.
+
+1. Decrement the `SP`.
+2. Copy the value in the given register to the address pointed to by
+   `SP`.
+
+Machine code:
+```
+01000101 00000rrr
+45 0r
+```
+
 ### POP
 
 `POP register`
@@ -571,21 +587,6 @@ Machine code:
 47 0r
 ```
 
-### PUSH
-
-`PUSH register`
-
-Push the value in the given register on the stack.
-
-1. Decrement the `SP`.
-2. Copy the value in the given register to the address pointed to by
-   `SP`.
-
-Machine code:
-```
-01000101 00000rrr
-45 0r
-```
 
 ### RET
 

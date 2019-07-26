@@ -7,15 +7,33 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU. """
-        self.ram = [00000000] * 256
+        self.ram = [000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.sp = 0xF4
+
+    # pop code 0b01000110
+    # push code 01000101
+    # prn code 
 
     def ram_read(self, MAR):
         return self.ram[MAR]
 
     def ram_write(self, MAR, MDR):
         self.ram[MAR] = MDR
+        
+    def handleStackPush(self):
+        self.sp -= 1
+        regNum = self.ram[self.pc + 1]
+        value = self.reg[regNum]
+        self.ram[self.sp] = value
+
+    def handleStackPop(self):
+        value = self.ram[self.sp]
+        regNum = self.ram[self.pc + 1]
+        self.reg[regNum] = value
+        self.sp += 1
+
 
     def load(self):
         """Load a program into memory."""
@@ -42,9 +60,27 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        ADD = 0b10100000
+        SUB = 0b10100001
+        MUL = 0b10100010
+        DIV = 0b10100011
+
+        if op == ADD:
             self.reg[reg_a] += self.reg[reg_b]
         # elif op == "SUB": etc
+        elif op == SUB:
+            self.reg[reg_a] -= self.reg[reg_b]
+
+        elif op == MUL:
+            self.reg[reg_a] *= self.reg[reg_b]
+
+        elif op == DIV:
+            if self.reg[reg_b] == 0:
+                print("Error: You are not allowed to divide a number by 0.")
+                sys.exit()
+            else:
+                self.reg[reg_a] /= self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -75,6 +111,8 @@ class CPU:
         PRN = 0b1000111
         HLT = 0b0000001
         MUL = 0b10100010
+        POP = 0b01000110
+        PUSH = 0b01000101
 
         while on:
             IR = self.ram[self.pc]
@@ -82,15 +120,22 @@ class CPU:
             # get next two MDR's from the next two MAR's stored in ram incase instructions need it
             operand_1 = self.ram_read(self.pc + 1)
             operand_2 = self.ram_read(self.pc + 2)
-            instruction = (IR >> 6  )
+            instruction = (IR >> 6)
 
                 # Check LDI instruction
-                
+            alu_number = (IR & 0b00100000) >> 5
+
+            if alu_number:
+                self.alu(IR, operand_1, operand_2)
+
             if IR == LDI:
                 self.reg[operand_1] = operand_2
 
-            if IR == MUL:
-                self.reg[operand_1] = self.reg[operand_1] * self.reg[operand_2]
+            if IR == POP:
+                self.handleStackPop()
+
+            if IR == PUSH:
+                self.handleStackPush()
 
             if IR == PRN:
                 print(self.reg[operand_1])
@@ -99,6 +144,7 @@ class CPU:
                 on = False
 
             self.pc += 1 + instruction
+
 
 
 
